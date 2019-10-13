@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 
 namespace GildedRoseTask
 {
@@ -10,79 +11,64 @@ namespace GildedRoseTask
             this.Items = Items;
         }
 
+        public void DegradeQuality(int points, Item item)
+        {
+            if (item.Quality > 0)
+                if (item.Quality < points)
+                    item.Quality = 0;
+                else
+                    item.Quality -= points;
+        }
+
+        public void IncreaseQuality(int points, Item item)
+        {
+            if (item.Quality < 50)
+                if (item.Quality + points > 50)
+                    item.Quality = 50;
+                else
+                    item.Quality += points;
+        }
+
         public void UpdateQuality()
         {
-            for (var i = 0; i < Items.Count; i++)
+            foreach (var item in Items)
             {
-                if (Items[i].Name != "Aged Brie" && Items[i].Name != "Backstage passes to a TAFKAL80ETC concert")
+                if (item.Name.Contains("Sulfuras"))
                 {
-                    if (Items[i].Quality > 0)
-                    {
-                        if (Items[i].Name != "Sulfuras, Hand of Ragnaros")
-                        {
-                            Items[i].Quality = Items[i].Quality - 1;
-                        }
-                    }
+                    continue;
+                }
+                else if (item.Name.Contains("Aged Brie"))
+                {
+                    IncreaseQuality(1, item);
+                }
+                else if (item.Name.Contains("Backstage passes"))
+                {
+                    if (item.SellIn == 0)
+                        item.Quality = 0;
+                    else if (item.SellIn < 6)
+                        IncreaseQuality(3, item);
+                    else if (item.SellIn < 11)
+                        IncreaseQuality(2, item);
+                    else if (item.SellIn > 10)
+                        IncreaseQuality(1, item);
+                }
+                else if (item.Name.Contains("Conjured"))
+                {
+                    if (item.SellIn > 0)
+                        DegradeQuality(2, item);
+                    else if (item.SellIn == 0)
+                        DegradeQuality(4, item);
                 }
                 else
                 {
-                    if (Items[i].Quality < 50)
-                    {
-                        Items[i].Quality = Items[i].Quality + 1;
-
-                        if (Items[i].Name == "Backstage passes to a TAFKAL80ETC concert")
-                        {
-                            if (Items[i].SellIn < 11)
-                            {
-                                if (Items[i].Quality < 50)
-                                {
-                                    Items[i].Quality = Items[i].Quality + 1;
-                                }
-                            }
-
-                            if (Items[i].SellIn < 6)
-                            {
-                                if (Items[i].Quality < 50)
-                                {
-                                    Items[i].Quality = Items[i].Quality + 1;
-                                }
-                            }
-                        }
-                    }
+                    if (item.SellIn > 0)
+                        DegradeQuality(1, item);
+                    else if (item.SellIn == 0)
+                        DegradeQuality(2, item);
                 }
 
-                if (Items[i].Name != "Sulfuras, Hand of Ragnaros")
-                {
-                    Items[i].SellIn = Items[i].SellIn - 1;
-                }
-
-                if (Items[i].SellIn < 0)
-                {
-                    if (Items[i].Name != "Aged Brie")
-                    {
-                        if (Items[i].Name != "Backstage passes to a TAFKAL80ETC concert")
-                        {
-                            if (Items[i].Quality > 0)
-                            {
-                                if (Items[i].Name != "Sulfuras, Hand of Ragnaros")
-                                {
-                                    Items[i].Quality = Items[i].Quality - 1;
-                                }
-                            }
-                        }
-                        else
-                        {
-                            Items[i].Quality = Items[i].Quality - Items[i].Quality;
-                        }
-                    }
-                    else
-                    {
-                        if (Items[i].Quality < 50)
-                        {
-                            Items[i].Quality = Items[i].Quality + 1;
-                        }
-                    }
-                }
+                if (item.SellIn > 0)
+                    item.SellIn -= 1;
             }
         }
     }
